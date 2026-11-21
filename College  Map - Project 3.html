@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project: Mapping U.S. Colleges with Python and Folium</title>
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --muted: #4a4a4a;
+    --accent: #145a56;
+    --accent-soft: #e8f3f2;
+    --warn: #7a3f00;
+    --warn-soft: #fff4e0;
+    --rule: #c5cfcd;
+    --code-bg: #f3f5f5;
+    --code-ink: #1a1a1a;
+  }
+  html { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    line-height: 1.65;
+    font-size: 1.06rem;
+  }
+  main { max-width: 52rem; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+  h1, h2, h3, .meta, table, .tag {
+    font-family: "Trebuchet MS", "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  h1 { font-size: 2.2rem; line-height: 1.15; margin: 0 0 .6rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.45rem; margin: 3rem 0 .8rem; padding-top: 1.2rem; border-top: 3px solid var(--accent); }
+  h3 { font-size: 1.1rem; margin: 1.8rem 0 .4rem; }
+  p { margin: .6rem 0; max-width: 42rem; }
+  .meta { color: var(--muted); font-size: .95rem; margin-bottom: 1.5rem; }
+  .goal { background: var(--accent-soft); border-left: 5px solid var(--accent); padding: 1rem 1.25rem; margin: 1.5rem 0; }
+  .goal p { margin: 0; }
+  .note { background: var(--warn-soft); border-left: 5px solid var(--warn); padding: 1rem 1.25rem; margin: 1.5rem 0; }
+  .note strong { color: var(--warn); font-family: "Trebuchet MS", Helvetica, Arial, sans-serif; }
+  .note p { margin: .4rem 0 0; }
+  ul, ol { padding-left: 1.4rem; max-width: 42rem; }
+  li { margin: .35rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .95rem; margin: 1rem 0; }
+  th, td { text-align: left; padding: .6rem .75rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { background: var(--accent-soft); }
+  .scroll { overflow-x: auto; }
+  code { font-family: Consolas, "Courier New", monospace; background: var(--accent-soft); padding: .08rem .35rem; border-radius: 3px; font-size: .92em; }
+  pre { background: var(--code-bg); color: var(--code-ink); padding: 1rem 1.2rem; overflow-x: auto; border-radius: 4px; border: 1px solid var(--rule); font-size: .9rem; line-height: 1.5; }
+  pre code { background: none; padding: 0; color: inherit; }
+  .tag { display: inline-block; background: var(--accent); color: #ffffff; font-size: .8rem; padding: .1rem .55rem; border-radius: 3px; margin-right: .4rem; }
+  .check li { list-style: none; margin-left: -1.4rem; }
+  .check li::before { content: "\2610\00a0"; }
+  footer { margin-top: 3rem; color: var(--muted); font-size: .9rem; font-family: "Trebuchet MS", Helvetica, Arial, sans-serif; }
+  @media print { body { font-size: 11pt; } pre { white-space: pre-wrap; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Mapping U.S. Colleges and Universities with Python and Folium</h1>
+<p class="meta">Student project &middot; Python data handling and mapping &middot; Estimated time: 3 to 5 hours</p>
+
+<div class="goal">
+  <p><strong>Project goal:</strong> Import a real-world dataset of U.S. postsecondary institutions, trim it to the columns you need, show it as a table, plot every institution on an interactive Folium map, and then build a menu that lets a user filter the map by typing in their choices.</p>
+</div>
+
+<h2>1. Background</h2>
+<p>The U.S. Department of Education publishes data on every college, university, and trade school through the Integrated Postsecondary Education Data System (IPEDS). Each record includes the school's name, state, level, sector, whether it is a Historically Black College or University (HBCU), and its map coordinates.</p>
+<p>Data like this is only useful if people can explore it. In this project you act as a data analyst who cleans a large file and turns it into a map a non-programmer could use.</p>
+
+<h2>2. Learning objectives</h2>
+<ul>
+  <li>Import data from a CSV, TXT, or JSON file using either Python file handling or the Pandas library.</li>
+  <li>Select and rename columns in a DataFrame.</li>
+  <li>Display a DataFrame as a readable table.</li>
+  <li>Create an interactive map with Folium and add markers with pop-up information.</li>
+  <li>Collect user input with prompts and use it to filter a DataFrame.</li>
+  <li>Rebuild a map from filtered data and handle cases where nothing matches.</li>
+</ul>
+
+<h2>3. What you will need</h2>
+<ul>
+  <li>Python 3.9 or newer, and a Jupyter Notebook, Google Colab, or a code editor.</li>
+  <li>Libraries: <code>pandas</code> and <code>folium</code> (install with <code>pip install pandas folium</code>).</li>
+  <li>A dataset of colleges and universities in <strong>CSV, TXT, or JSON</strong> format. Your instructor will provide one, or you can download the IPEDS &ldquo;Directory information&rdquo; file from the National Center for Education Statistics (nces.ed.gov/ipeds).</li>
+</ul>
+
+<h2>3b. Required columns</h2>
+<p>Your dataset will have many columns. Keep <strong>only</strong> the seven below. Your column labels may differ slightly depending on the file, so look at the headers first.</p>
+<div class="scroll">
+<table>
+  <thead>
+    <tr><th>Information to keep</th><th>Typical IPEDS column</th><th>Rename to</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Name</td><td><code>INSTNM</code></td><td>keep as is (or <code>Name</code>)</td></tr>
+    <tr><td>State abbreviation</td><td><code>STABBR</code></td><td>keep as is (or <code>State</code>)</td></tr>
+    <tr><td>Level of institution</td><td><code>ICLEVEL</code></td><td>keep as is (or <code>Level</code>)</td></tr>
+    <tr><td>Sector of institution</td><td><code>SECTOR</code></td><td>keep as is (or <code>Sector</code>)</td></tr>
+    <tr><td>Historically Black College or University</td><td><code>HBCU</code></td><td>keep as is</td></tr>
+    <tr><td>Longitude location of institution</td><td><code>LONGITUD</code></td><td><code>lat</code></td></tr>
+    <tr><td>Latitude location of institution</td><td><code>LATITUDE</code></td><td><code>lon</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="note">
+  <strong>Read this before you code: the coordinate names are swapped.</strong>
+  <p>This assignment asks you to rename the <em>longitude</em> column to <code>lat</code> and the <em>latitude</em> column to <code>lon</code>. Follow the instruction exactly, but be careful: <code>lat</code> now holds longitude values and <code>lon</code> holds latitude values. Folium expects locations in the order <strong>[latitude, longitude]</strong>, so you must pass <code>[row['lon'], row['lat']]</code> to the marker. If your markers appear in the ocean or in Antarctica, the values are in the wrong order.</p>
+  <p>In your write-up (Part 8), add one or two sentences explaining why the swapped names could cause bugs in a real project.</p>
+</div>
+
+<h2>4. Instructions</h2>
+
+<h3>Part 1: Import the dataset</h3>
+<p>Choose <strong>one</strong> of the two approaches and note which you used in a comment at the top of your code.</p>
+<p><span class="tag">Option A</span> File handling with <code>open()</code>. Open the file, read it, and build a table from the rows (for example with the <code>csv</code> or <code>json</code> module). Use a <code>with</code> statement so the file closes automatically.</p>
+<p><span class="tag">Option B</span> The Pandas library. Use <code>pd.read_csv()</code>, <code>pd.read_json()</code>, or <code>pd.read_csv(..., sep="\t")</code> for tab-delimited TXT files.</p>
+<p>Whichever you choose, the result must be a Pandas DataFrame. Handle a missing or misnamed file with <code>try/except</code> and print a clear message.</p>
+
+<h3>Part 2: Extract and clean the needed columns</h3>
+<ul>
+  <li>Keep only the seven columns in the table above.</li>
+  <li>Rename the two coordinate columns as specified.</li>
+  <li>Remove rows with missing or zero coordinates, since they cannot be mapped.</li>
+  <li>Confirm that the coordinate columns are numeric.</li>
+  <li>Reset the index after cleaning.</li>
+</ul>
+
+<h3>Part 3: Print the DataFrame as a display table</h3>
+<p>Before any map appears, display the cleaned DataFrame as a table. In Jupyter or Colab, show it with <code>display(df)</code> or by ending a cell with <code>df</code>. In a plain script, print it with <code>print(df.to_string())</code> or <code>df.head(20)</code>. Also print the number of rows and columns.</p>
+
+<h3>Part 4: Build the Folium map</h3>
+<p>Use the <strong>same DataFrame</strong> you just displayed to create the map.</p>
+<ol>
+  <li>Create a base map centered on the United States, for example <code>folium.Map(location=[39.8, -98.6], zoom_start=4)</code>.</li>
+  <li>Loop through the DataFrame rows and add one <code>folium.Marker</code> (or <code>CircleMarker</code>) per institution.</li>
+  <li>Give each marker a pop-up and a tooltip showing:
+    <ul>
+      <li>Name</li>
+      <li>State abbreviation</li>
+      <li>Level of institution</li>
+      <li>Sector of institution</li>
+      <li>Historically Black College or University</li>
+      <li>Longitude (stored in <code>lat</code>) and latitude (stored in <code>lon</code>)</li>
+    </ul>
+  </li>
+  <li>Thousands of markers can slow the map. Consider <code>folium.plugins.MarkerCluster</code>.</li>
+  <li>Display the map, and save it with <code>m.save("college_map.html")</code>.</li>
+</ol>
+
+<h3>Part 5: Create the filter menu</h3>
+<p>Once the full map works, add a text menu that asks the user to filter by any of the following. Use <code>input()</code> prompts, or <code>ipywidgets</code> dropdowns if you are in Jupyter.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>Menu option</th><th>Prompt example</th><th>Matching rule</th></tr></thead>
+  <tbody>
+    <tr><td>1. Name</td><td>Enter all or part of a name:</td><td>Partial, case-insensitive match</td></tr>
+    <tr><td>2. State abbreviation</td><td>Enter a state (for example IL):</td><td>Exact match, case-insensitive</td></tr>
+    <tr><td>3. Level of institution</td><td>Enter a level code or label:</td><td>Exact match</td></tr>
+    <tr><td>4. Sector of institution</td><td>Enter a sector code or label:</td><td>Exact match</td></tr>
+    <tr><td>5. HBCU</td><td>Is it an HBCU? (yes/no):</td><td>Convert yes/no to the dataset's coding (for example 1 and 2)</td></tr>
+    <tr><td>6. Show map / Reset filters / Quit</td><td>Choose an option:</td><td>Build the map or clear all filters</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Your menu should loop until the user chooses to quit.</p>
+
+<h3>Part 6: Filter the map from the menu</h3>
+<ul>
+  <li>Store the user's selections, then filter the DataFrame with those selections.</li>
+  <li>Filters should be combinable. For example, State = IL <em>and</em> HBCU = yes returns only Illinois HBCUs.</li>
+  <li>Rebuild the map using only the filtered rows, and print how many institutions matched.</li>
+  <li>If no rows match, print a helpful message (&ldquo;No institutions match those filters. Try removing one.&rdquo;) instead of crashing or showing an empty map.</li>
+  <li>Center and zoom the map on the filtered results, for example with <code>m.fit_bounds()</code>.</li>
+  <li>Check user input: ignore extra spaces, handle invalid menu choices, and do not let the program crash on blank input.</li>
+</ul>
+
+<h3>Starter outline</h3>
+<pre><code># Option B (Pandas) shown. Replace with open() if you choose Option A.
+import pandas as pd
+import folium
+
+# 1. Import
+try:
+    df = pd.read_csv("colleges.csv")
+except FileNotFoundError:
+    print("File not found. Check the file name and location.")
+    raise
+
+# 2. Extract, rename, clean
+cols = ["INSTNM", "STABBR", "ICLEVEL", "SECTOR", "HBCU", "LONGITUD", "LATITUDE"]
+df = df[cols].rename(columns={"LONGITUD": "lat", "LATITUDE": "lon"})
+# ...drop missing values, reset index...
+
+# 3. Display table BEFORE the map
+display(df.head(20))      # or print(df.head(20).to_string())
+
+# 4. Map function
+def build_map(data):
+    m = folium.Map(location=[39.8, -98.6], zoom_start=4)
+    for _, row in data.iterrows():
+        # NOTE: 'lon' holds latitude and 'lat' holds longitude
+        folium.Marker([row["lon"], row["lat"]],
+                      popup=f"{row['INSTNM']} ({row['STABBR']})").add_to(m)
+    return m
+
+# 5-6. Menu loop and filtering
+# while True:
+#     show menu, read input, update filters, filter df, rebuild map</code></pre>
+
+<h2>4b. Example output</h2>
+<p>Use these examples to check your own work. Your table and map will contain many more rows, and your markers will look different depending on the Folium options you choose.</p>
+
+<h3>Sample DataFrame</h3>
+<p>This is what <code>display(df.head(8))</code> might show after cleaning. Notice that the <code>lat</code> column holds <strong>longitude</strong> values (negative numbers in the U.S.) and the <code>lon</code> column holds <strong>latitude</strong> values, as the assignment requires. In the raw IPEDS file, level and HBCU are stored as codes (1 = 4-year, 2 = 2-year; 1 = Yes, 2 = No). Labels are shown here to make the example easy to read. Coordinates are approximate and for illustration only.</p>
+<div class="scroll">
+<table>
+  <thead><tr><th>#</th><th>Name</th><th>State</th><th>Level</th><th>Sector</th><th>HBCU</th><th>lat</th><th>lon</th></tr></thead>
+  <tbody><tr><td>1</td><td>Howard University</td><td>DC</td><td>4-year</td><td>Private not-for-profit</td><td>Yes</td><td>-77.0196</td><td>38.9227</td></tr><tr><td>2</td><td>Spelman College</td><td>GA</td><td>4-year</td><td>Private not-for-profit</td><td>Yes</td><td>-84.4121</td><td>33.7456</td></tr><tr><td>3</td><td>Tuskegee University</td><td>AL</td><td>4-year</td><td>Private not-for-profit</td><td>Yes</td><td>-85.7058</td><td>32.431</td></tr><tr><td>4</td><td>Hampton University</td><td>VA</td><td>4-year</td><td>Private not-for-profit</td><td>Yes</td><td>-76.3366</td><td>37.0214</td></tr><tr><td>5</td><td>University of Illinois Urbana-Champaign</td><td>IL</td><td>4-year</td><td>Public</td><td>No</td><td>-88.2272</td><td>40.102</td></tr><tr><td>6</td><td>Harold Washington College</td><td>IL</td><td>2-year</td><td>Public</td><td>No</td><td>-87.6298</td><td>41.8836</td></tr><tr><td>7</td><td>University of Texas at Austin</td><td>TX</td><td>4-year</td><td>Public</td><td>No</td><td>-97.7341</td><td>30.2849</td></tr><tr><td>8</td><td>Stanford University</td><td>CA</td><td>4-year</td><td>Private not-for-profit</td><td>No</td><td>-122.1697</td><td>37.4275</td></tr></tbody>
+</table>
+</div>
+
+<h3>Sample map</h3>
+<p>The picture below shows how the eight sample records above would appear when plotted. Numbers match the table rows. The white box shows the kind of pop-up a user sees after clicking marker 2. Your Folium map will be interactive, with a real street map underneath and zoom controls, instead of this simplified outline.</p>
+<svg viewBox="0 0 760 430" role="img" aria-label="Sample map of eight institutions plotted by latitude and longitude" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;background:#eaf2f6;border:1px solid #c5cfcd;border-radius:4px">
+<line x1="89.3" y1="20" x2="89.3" y2="400" stroke="#c9d7de" stroke-width="1"/><text x="89.3" y="416" font-size="11" text-anchor="middle" fill="#3d4a50" font-family="Arial">120°W</text>
+<line x1="208.0" y1="20" x2="208.0" y2="400" stroke="#c9d7de" stroke-width="1"/><text x="208.0" y="416" font-size="11" text-anchor="middle" fill="#3d4a50" font-family="Arial">110°W</text>
+<line x1="326.6" y1="20" x2="326.6" y2="400" stroke="#c9d7de" stroke-width="1"/><text x="326.6" y="416" font-size="11" text-anchor="middle" fill="#3d4a50" font-family="Arial">100°W</text>
+<line x1="445.3" y1="20" x2="445.3" y2="400" stroke="#c9d7de" stroke-width="1"/><text x="445.3" y="416" font-size="11" text-anchor="middle" fill="#3d4a50" font-family="Arial">90°W</text>
+<line x1="563.9" y1="20" x2="563.9" y2="400" stroke="#c9d7de" stroke-width="1"/><text x="563.9" y="416" font-size="11" text-anchor="middle" fill="#3d4a50" font-family="Arial">80°W</text>
+<line x1="682.5" y1="20" x2="682.5" y2="400" stroke="#c9d7de" stroke-width="1"/><text x="682.5" y="416" font-size="11" text-anchor="middle" fill="#3d4a50" font-family="Arial">70°W</text>
+<line x1="30" y1="385.4" x2="730" y2="385.4" stroke="#c9d7de" stroke-width="1"/><text x="6" y="389.4" font-size="11" fill="#3d4a50" font-family="Arial">25°N</text>
+<line x1="30" y1="312.3" x2="730" y2="312.3" stroke="#c9d7de" stroke-width="1"/><text x="6" y="316.3" font-size="11" fill="#3d4a50" font-family="Arial">30°N</text>
+<line x1="30" y1="239.2" x2="730" y2="239.2" stroke="#c9d7de" stroke-width="1"/><text x="6" y="243.2" font-size="11" fill="#3d4a50" font-family="Arial">35°N</text>
+<line x1="30" y1="166.2" x2="730" y2="166.2" stroke="#c9d7de" stroke-width="1"/><text x="6" y="170.2" font-size="11" fill="#3d4a50" font-family="Arial">40°N</text>
+<line x1="30" y1="93.1" x2="730" y2="93.1" stroke="#c9d7de" stroke-width="1"/><text x="6" y="97.1" font-size="11" fill="#3d4a50" font-family="Arial">45°N</text>
+<polygon points="33.6,43.4 53.7,34.6 385.9,34.6 451.2,49.2 510.5,71.2 534.2,93.1 534.2,136.9 575.8,119.4 623.2,93.1 670.7,93.1 712.2,60.9 718.1,96.0 682.5,115.0 676.6,139.8 635.1,158.8 617.3,188.1 611.4,210.0 617.3,236.3 587.6,256.8 552.0,286.0 563.9,356.2 561.5,382.5 546.1,381.0 530.7,341.5 516.4,312.3 474.9,307.9 451.2,310.8 454.7,326.9 433.4,324.0 397.8,318.2 359.8,345.9 359.8,372.2 332.5,348.8 308.8,315.2 291.0,326.9 273.2,316.7 249.5,286.0 229.3,286.0 196.1,293.3 151.0,275.8 123.7,275.8 107.1,253.8 82.2,246.5 59.7,202.7 39.5,161.8 35.9,125.2 41.9,75.5" fill="#f6f4ec" stroke="#8a948f" stroke-width="1.5" stroke-linejoin="round"/>
+<circle cx="599.3" cy="181.9" r="10" fill="#b3261e" stroke="#fff" stroke-width="2"/><text x="599.3" y="185.9" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="Arial">1</text>
+<circle cx="511.6" cy="257.6" r="10" fill="#b3261e" stroke="#fff" stroke-width="2"/><text x="511.6" y="261.6" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="Arial">2</text>
+<circle cx="496.2" cy="276.8" r="10" fill="#b3261e" stroke="#fff" stroke-width="2"/><text x="496.2" y="280.8" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="Arial">3</text>
+<circle cx="607.4" cy="209.7" r="10" fill="#b3261e" stroke="#fff" stroke-width="2"/><text x="607.4" y="213.7" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="Arial">4</text>
+<circle cx="466.3" cy="164.7" r="10" fill="#1f5fa8" stroke="#fff" stroke-width="2"/><text x="466.3" y="168.7" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="Arial">5</text>
+<circle cx="473.4" cy="138.6" r="10" fill="#1f5fa8" stroke="#fff" stroke-width="2"/><text x="473.4" y="142.6" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="Arial">6</text>
+<circle cx="353.5" cy="308.1" r="10" fill="#1f5fa8" stroke="#fff" stroke-width="2"/><text x="353.5" y="312.1" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="Arial">7</text>
+<circle cx="63.6" cy="203.8" r="10" fill="#1f5fa8" stroke="#fff" stroke-width="2"/><text x="63.6" y="207.8" font-size="11" font-weight="bold" text-anchor="middle" fill="#fff" font-family="Arial">8</text>
+<line x1="521.6" y1="257.6" x2="658.8" y2="335.0" stroke="#333" stroke-width="1"/>
+<rect x="658.8" y="305.0" width="170" height="88" rx="4" fill="#fff" stroke="#333"/>
+<text x="666.8" y="321.0" font-size="10.5" font-weight="bold" fill="#1a1a1a" font-family="Arial">Spelman College</text>
+<text x="666.8" y="334.0" font-size="10.5" font-weight="normal" fill="#1a1a1a" font-family="Arial">State: GA</text>
+<text x="666.8" y="347.0" font-size="10.5" font-weight="normal" fill="#1a1a1a" font-family="Arial">Level: 4-year</text>
+<text x="666.8" y="360.0" font-size="10.5" font-weight="normal" fill="#1a1a1a" font-family="Arial">Sector: Private not-for-profit</text>
+<text x="666.8" y="373.0" font-size="10.5" font-weight="normal" fill="#1a1a1a" font-family="Arial">HBCU: Yes</text>
+<text x="666.8" y="386.0" font-size="10.5" font-weight="normal" fill="#1a1a1a" font-family="Arial">lat: -84.4121  lon: 33.7456</text>
+<rect x="40" y="330" width="150" height="52" rx="4" fill="#fff" stroke="#8a948f"/>
+<circle cx="56" cy="347" r="7" fill="#b3261e"/><text x="70" y="351" font-size="11.5" fill="#1a1a1a" font-family="Arial">HBCU</text>
+<circle cx="56" cy="368" r="7" fill="#1f5fa8"/><text x="70" y="372" font-size="11.5" fill="#1a1a1a" font-family="Arial">Not an HBCU</text>
+</svg>
+<p class="meta" style="margin-top:.5rem">Illustration only: simplified outline of the contiguous United States, not to scale.</p>
+
+<h2>5. Deliverables</h2>
+<ul class="check">
+  <li>Your Python file or notebook (<code>.py</code> or <code>.ipynb</code>), with comments explaining each section.</li>
+  <li>The saved map file <code>college_map.html</code> for the full dataset.</li>
+  <li>At least two saved filtered maps, for example <code>il_hbcu_map.html</code>.</li>
+  <li>Screenshots of the displayed table and of the menu in use.</li>
+  <li>A short write-up (Part 8).</li>
+</ul>
+
+<h2>6. Grading rubric (100 points)</h2>
+<div class="scroll">
+<table>
+  <thead><tr><th>Criteria</th><th>Points</th></tr></thead>
+  <tbody>
+    <tr><td>Dataset imported correctly using file handling or Pandas, with error handling</td><td>15</td></tr>
+    <tr><td>Only the seven required columns kept, renamed correctly, and cleaned</td><td>15</td></tr>
+    <tr><td>DataFrame displayed as a table <em>before</em> the map</td><td>10</td></tr>
+    <tr><td>Folium map uses the DataFrame, with correct coordinate order and all required marker information</td><td>20</td></tr>
+    <tr><td>Menu offers all five filter options and loops until the user quits</td><td>15</td></tr>
+    <tr><td>Map filters correctly from user input, including combined filters and no-match handling</td><td>15</td></tr>
+    <tr><td>Code quality, comments, and write-up</td><td>10</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>7. Extension challenges (optional)</h2>
+<ul>
+  <li>Color-code markers by sector or highlight HBCUs in a different color.</li>
+  <li>Add a legend and a count of results to the map.</li>
+  <li>Replace the numeric codes with readable labels using the dataset's data dictionary.</li>
+  <li>Let the user save the current filtered map under a file name of their choice.</li>
+</ul>
+
+<h2>8. Reflection questions</h2>
+<ol>
+  <li>Which import method did you choose, and why?</li>
+  <li>What problems did you find in the raw data, and how did you handle them?</li>
+  <li>What could go wrong because of the swapped <code>lat</code> and <code>lon</code> column names?</li>
+  <li>What would make the filter menu easier for a non-programmer to use?</li>
+</ol>
+
+<footer>Submit your files according to your instructor's directions. Cite the source of your dataset in your code comments.</footer>
+
+</main>
+</body>
+</html>
